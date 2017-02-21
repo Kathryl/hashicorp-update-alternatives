@@ -40,7 +40,7 @@ SOFT2MANAGE=$( echo "${1}" | awk -F "_" '{print $1}' )
 SOFTVERSION=$( echo "${1}" | awk -F "_" '{print $2}' )
 
 # Version exist already ?
-if [ -f "/usr/local/bin/${SOFT2MANAGE}_${SOFTVERSION}" ]
+if [ -f "/usr/local/bin/${SOFT2MANAGE}_${SOFTVERSION}" ] &&  [ -x "/usr/local/bin/${SOFT2MANAGE}_${SOFTVERSION}" ]
 then
     print_exit "This version already exist"
 fi
