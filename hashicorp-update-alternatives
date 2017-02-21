@@ -1,0 +1,52 @@
+#!/bin/sh
+
+# I was lazy enough to create my own package of terraform or packer currently
+# and i was wondering if i have to switch from multiple version of the same software ...
+
+# set -x
+
+# read argument
+if [ -z "$1" ]
+then
+  echo "No argument"
+  echo "usage : ${0} <SOFTWARE ZIP FILE>"
+  echo "example : ${0} packer_0.12.2_linux_amd64.zip"
+  exit 1
+fi
+
+# Testing unzip presence
+if [ ! -f /usr/bin/unzip ]
+then
+  echo "unzip is missing"
+  exit 1
+fi
+
+# Getting software name
+# (Hoping they won't change the prefix in the future)
+
+SOFT2MANAGE=$( echo "${1}" | awk -F "_" '{print $1}' )
+SOFTVERSION=$( echo "${1}" | awk -F "_" '{print $2}' )
+
+# Version exist already ?
+
+if [ ! -f "/usr/local/bin/${SOFT2MANAGE}_${SOFTVERSION}" ]
+then
+
+  # Wondering if i can do something less "dirty" ?
+  unzip -jp "${1}" "${SOFT2MANAGE}" | cat > "/usr/local/bin/${SOFT2MANAGE}_${SOFTVERSION}"
+
+  # Getting current number of software
+  SOFTNUMBERS=$( find /usr/local/bin/ -xdev -type f -name "${SOFT2MANAGE}_*" | wc -l )
+  SOFTNUMBERS=$((SOFTNUMBERS + 1))
+
+  # Finally updating
+  update-alternatives --verbose --install "/usr/local/bin/${SOFT2MANAGE}" "${SOFT2MANAGE}" "/usr/local/bin/${SOFT2MANAGE}_${SOFTVERSION}" "${SOFTNUMBERS}"
+
+  exit 0
+
+else
+
+  echo "This version already exist"
+  exit 1
+
+fi
