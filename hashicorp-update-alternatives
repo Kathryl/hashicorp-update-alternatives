@@ -14,11 +14,22 @@ then
   exit 1
 fi
 
+func print_exit() {
+    echo $1
+    exit 1
+}
+
 # Testing unzip presence
-if [ ! -f /usr/bin/unzip ]
+UNZIP="/usr/bin/unzip"
+if [ ! -f $UNZIP ] || [ ! -x $UNZIP ]
 then
-  echo "unzip is missing"
-  exit 1
+  print_exit "$UNZIP:  no such command"
+fi
+
+UPDATE_ALTERNATIVES="/usr/bin/update-alternatives"
+if [ ! -f $UPDATE_ALTERNATIVES ] || [ ! -x $UPDATE_ALTERNATIVES ]
+then
+  print_exit "$UPDATE_ALTERNATIVES:  no such command"
 fi
 
 # Getting software name
@@ -33,7 +44,7 @@ if [ ! -f "/usr/local/bin/${SOFT2MANAGE}_${SOFTVERSION}" ]
 then
 
   # Wondering if i can do something less "dirty" ?
-  unzip -jp "${1}" "${SOFT2MANAGE}" | cat > "/usr/local/bin/${SOFT2MANAGE}_${SOFTVERSION}"
+  $UNZIP -jp "${1}" "${SOFT2MANAGE}" | cat > "/usr/local/bin/${SOFT2MANAGE}_${SOFTVERSION}"
   chmod 0775 "/usr/local/bin/${SOFT2MANAGE}_${SOFTVERSION}"
 
   # Getting current number of software
@@ -41,7 +52,7 @@ then
   SOFTNUMBERS=$((SOFTNUMBERS + 1))
 
   # Finally updating
-  update-alternatives --verbose --install "/usr/local/bin/${SOFT2MANAGE}" "${SOFT2MANAGE}" "/usr/local/bin/${SOFT2MANAGE}_${SOFTVERSION}" "${SOFTNUMBERS}"
+  $UPDATE_ALTERNATIVES --verbose --install "/usr/local/bin/${SOFT2MANAGE}" "${SOFT2MANAGE}" "/usr/local/bin/${SOFT2MANAGE}_${SOFTVERSION}" "${SOFTNUMBERS}"
 
   exit 0
 
