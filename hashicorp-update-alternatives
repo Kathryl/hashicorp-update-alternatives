@@ -14,23 +14,24 @@ then
   exit 1
 fi
 
-func print_exit() {
+func print_exit () {
     echo $1
     exit 1
 }
 
+func check_exec () {
+  if [ ! -f $1 ] || [ ! -x $1 ]
+  then
+    print_exit "$1:  no such command"
+  fi
+}
+
 # Testing unzip presence
 UNZIP="/usr/bin/unzip"
-if [ ! -f $UNZIP ] || [ ! -x $UNZIP ]
-then
-  print_exit "$UNZIP:  no such command"
-fi
+check_exec $UNZIP
 
 UPDATE_ALTERNATIVES="/usr/bin/update-alternatives"
-if [ ! -f $UPDATE_ALTERNATIVES ] || [ ! -x $UPDATE_ALTERNATIVES ]
-then
-  print_exit "$UPDATE_ALTERNATIVES:  no such command"
-fi
+check_exec $UPDATE_ALTERNATIVES
 
 # Getting software name
 # (Hoping they won't change the prefix in the future)
@@ -39,26 +40,20 @@ SOFT2MANAGE=$( echo "${1}" | awk -F "_" '{print $1}' )
 SOFTVERSION=$( echo "${1}" | awk -F "_" '{print $2}' )
 
 # Version exist already ?
-
-if [ ! -f "/usr/local/bin/${SOFT2MANAGE}_${SOFTVERSION}" ]
+if [ -f "/usr/local/bin/${SOFT2MANAGE}_${SOFTVERSION}" ]
 then
-
-  # Wondering if i can do something less "dirty" ?
-  $UNZIP -jp "${1}" "${SOFT2MANAGE}" | cat > "/usr/local/bin/${SOFT2MANAGE}_${SOFTVERSION}"
-  chmod 0775 "/usr/local/bin/${SOFT2MANAGE}_${SOFTVERSION}"
-
-  # Getting current number of software
-  SOFTNUMBERS=$( find /usr/local/bin/ -xdev -type f -name "${SOFT2MANAGE}_*" | wc -l )
-  SOFTNUMBERS=$((SOFTNUMBERS + 1))
-
-  # Finally updating
-  $UPDATE_ALTERNATIVES --verbose --install "/usr/local/bin/${SOFT2MANAGE}" "${SOFT2MANAGE}" "/usr/local/bin/${SOFT2MANAGE}_${SOFTVERSION}" "${SOFTNUMBERS}"
-
-  exit 0
-
-else
-
-  echo "This version already exist"
-  exit 1
-
+    print_exit "This version already exist"
 fi
+
+# Wondering if i can do something less "dirty" ?
+$UNZIP -jp "${1}" "${SOFT2MANAGE}" | cat > "/usr/local/bin/${SOFT2MANAGE}_${SOFTVERSION}"
+chmod 0775 "/usr/local/bin/${SOFT2MANAGE}_${SOFTVERSION}"
+
+# Getting current number of software
+SOFTNUMBERS=$( find /usr/local/bin/ -xdev -type f -name "${SOFT2MANAGE}_*" | wc -l )
+SOFTNUMBERS=$((SOFTNUMBERS + 1))
+
+# Finally updating
+$UPDATE_ALTERNATIVES --verbose --install "/usr/local/bin/${SOFT2MANAGE}" "${SOFT2MANAGE}" "/usr/local/bin/${SOFT2MANAGE}_${SOFTVERSION}" "${SOFTNUMBERS}"
+
+exit 0
