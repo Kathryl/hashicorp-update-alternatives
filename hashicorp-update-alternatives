@@ -34,6 +34,7 @@ then
 
   # Wondering if i can do something less "dirty" ?
   unzip -jp "${1}" "${SOFT2MANAGE}" | cat > "/usr/local/bin/${SOFT2MANAGE}_${SOFTVERSION}"
+  chmod 0775 "/usr/local/bin/${SOFT2MANAGE}_${SOFTVERSION}"
 
   # Getting current number of software
   SOFTNUMBERS=$( find /usr/local/bin/ -xdev -type f -name "${SOFT2MANAGE}_*" | wc -l )
